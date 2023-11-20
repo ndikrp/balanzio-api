@@ -1,27 +1,24 @@
 const express = require('express');
-const app = express();
-const router = express.Router();
-const bodyParser = require('body-parser');
-const responseHelper = require('express-response-helper').helper();
+const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql');
-const dotenv = require('dotenv');
+const router = express.Router();
 
 dotenv.config();
 
 const pool = mysql.createConnection({
-    host: '34.101.111.175',
-    user: 'root',
-    database: 'balanziov1',
-    password: ''
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
 });
 
+//-----------------------------------/insert--------------------------------//
+
 router.post('/insert', (req, res) => {
-  // Extract user input from the JSON body
   const userData = req.body;
 
-  // Example validation - make sure the required fields are present
   const requiredFields = ['name', 'weight', 'height', 'gender', 'age', 'email', 'password'];
   for (const field of requiredFields) {
     if (!userData[field]) {
@@ -29,7 +26,6 @@ router.post('/insert', (req, res) => {
     }
   }
 
-  // Check if the email is already registered
   const checkEmailSql = 'SELECT * FROM users WHERE email = ?';
   pool.query(checkEmailSql, [userData.email], (checkError, checkResults) => {
     if (checkError) {
@@ -37,23 +33,17 @@ router.post('/insert', (req, res) => {
       return res.status(500).json({ error: 'Error checking email' });
     }
 
-    // If email already exists, return an error
     if (checkResults.length > 0) {
       return res.status(400).json({ error: 'Email already exists' });
     }
 
-    // Email is unique, proceed with user insertion
-
-    // Hash the password
-    const saltRounds = 10; // Number of salt rounds for bcrypt
+    const saltRounds = 10; 
     bcrypt.hash(userData.password, saltRounds, (hashError, hashedPassword) => {
       if (hashError) {
         console.error('Error hashing password:', hashError);
-        // Handle the error appropriately, e.g., return an error response to the client
         return res.status(500).json({ error: 'Error hashing password' });
       }
 
-      // Use the hashed password in your database query
       const insertUserSql = 'INSERT INTO users (name, weight, height, gender, age, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)';
       const values = [
         userData.name,
@@ -62,7 +52,7 @@ router.post('/insert', (req, res) => {
         userData.gender,
         userData.age,
         userData.email,
-        hashedPassword, // Use the hashed password here
+        hashedPassword, 
       ];
 
       pool.query(insertUserSql, values, (insertError, results) => {
@@ -77,6 +67,8 @@ router.post('/insert', (req, res) => {
     });
   });
 });
+
+//-----------------------------------/login--------------------------------//
 
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
@@ -111,7 +103,78 @@ router.post('/login', (req, res) => {
   });
 });
 
+//-----------------------------------/user--------------------------------//
 
+router.put('/user/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const { name, weight, height, gender, age, password } = req.body;
 
+  const updateFields = [];
+  const updateValues = [];
+
+  if (name !== undefined) {
+    updateFields.push('name = ?');
+    updateValues.push(name);
+  }
+
+  if (weight !== undefined) {
+    updateFields.push('weight = ?');
+    updateValues.push(weight);
+  }
+
+  if (height !== undefined) {
+    updateFields.push('height = ?');
+    updateValues.push(height);
+  }
+
+  if (gender !== undefined) {
+    updateFields.push('gender = ?');
+    updateValues.push(gender);
+  }
+
+  if (age !== undefined) {
+    updateFields.push('age = ?');
+    updateValues.push(age);
+  }
+
+  if (password !== undefined) {
+    const saltRounds = 10;
+    bcrypt.hash(password, saltRounds, (hashError, hashedPassword) => {
+      if (hashError) {
+        console.error('Error hashing password:', hashError);
+        return res.status(500).json({ error: 'Error hashing password' });
+      }
+
+      updateFields.push('password = ?');
+      updateValues.push(hashedPassword);
+
+      performUpdate();
+    });
+  } else {
+    performUpdate();
+  }
+
+  function performUpdate() {
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'No valid fields provided for update' });
+    }
+
+    const updateQuery = `UPDATE users SET ${updateFields.join(', ')} WHERE userId = ?`;
+    const values = [...updateValues, userId];
+
+    pool.query(updateQuery, values, (err, results) => {
+      if (err) {
+        console.error('Error updating user data:', err);
+        return res.status(500).json({ error: 'Error updating user data' });
+      }
+
+      console.log('Updated rows:', results.affectedRows);
+      res.json({ message: 'User data updated successfully', results });
+    });
+  }
+});
 module.exports = router;
+
+
+
 
