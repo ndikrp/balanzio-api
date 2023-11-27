@@ -1,22 +1,12 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const mysql = require('mysql');
 const router = express.Router();
-
-dotenv.config();
-
-const pool = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-});
+const pool = require('../../config/database.js');
 
 //-----------------------------------/insert--------------------------------//
 
-router.post('/insert', (req, res) => {
+router.post('/register', (req, res) => {
   const userData = req.body;
 
   const requiredFields = ['name', 'weight', 'height', 'gender', 'age', 'email', 'password'];
@@ -62,7 +52,7 @@ router.post('/insert', (req, res) => {
         }
 
         console.log('Inserted rows:', results.affectedRows);
-        res.json({ message: 'User data inserted successfully', results });
+        res.json({status: 'Success', message: 'User data inserted successfully', results });
       });
     });
   });
@@ -97,7 +87,7 @@ router.post('/login', (req, res) => {
 
       const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-      res.json({ token });
+      res.json({ status: 'Success', message: 'Successfuly Login', token });
       console.log('Retrieved user:', user);
     });
   });
@@ -169,7 +159,7 @@ router.put('/user/:userId', (req, res) => {
       }
 
       console.log('Updated rows:', results.affectedRows);
-      res.json({ message: 'User data updated successfully', results });
+      res.json({ status: 'Success', message: 'User data updated successfully', results });
     });
   }
 });

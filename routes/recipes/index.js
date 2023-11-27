@@ -1,16 +1,6 @@
 const express = require('express');
-const mysql = require('mysql');
-const dotenv = require('dotenv');
 const router = express.Router();
-
-dotenv.config();
-
-const pool = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-});
+const pool = require('../../config/database.js');
 
 //-----------------------------------/list--------------------------------//
 
@@ -23,7 +13,7 @@ router.get('/list', (req, res) => {
       return res.status(500).json({ error: 'Error querying recipes' });
     }
 
-    res.json({ recipes: results });
+    res.json({ status: 'Success', recipes: results });
   });
 });
 
@@ -37,7 +27,6 @@ router.post('/recipe/:userId', (req, res) => {
     return res.status(400).json({ error: 'Recipe ID is required' });
   }
 
-  // Check if the combination of userId and recipe_id already exists in favorites
   const checkDuplicateQuery = 'SELECT * FROM favorites WHERE userId = ? AND recipe_id = ?';
   pool.query(checkDuplicateQuery, [userId, recipe_id], (duplicateErr, duplicateResults) => {
     if (duplicateErr) {
@@ -46,12 +35,9 @@ router.post('/recipe/:userId', (req, res) => {
     }
 
     if (duplicateResults.length > 0) {
-      // If the combination already exists, you can choose how to handle it.
-      // Here, I'm sending a 400 Bad Request response.
       return res.status(400).json({ error: 'Recipe is already a favorite for this user.' });
     }
 
-    // Continue with the insertion since it's not a duplicate
     const getFoodNameQuery = 'SELECT name FROM recipes WHERE recipe_id = ?';
 
     pool.query(getFoodNameQuery, [recipe_id], (err, results) => {
@@ -75,7 +61,7 @@ router.post('/recipe/:userId', (req, res) => {
           return res.status(500).json({ error: 'Error adding favorite recipe.' });
         }
 
-        res.json({ message: 'Favorite recipe added successfully', result });
+        res.json({status: 'Success', message: 'Favorite recipe added successfully', result });
       });
     });
   });
@@ -92,7 +78,7 @@ router.get('/recipe/favorites/:userId', (req, res) => {
       return res.status(500).json({ error: 'Error retrieving favorites.' });
     }
 
-    res.json({ favorites: results });
+    res.json({status: 'Success', favorites: results });
   });
 });
 
