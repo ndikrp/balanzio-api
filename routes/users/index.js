@@ -27,7 +27,7 @@ router.post('/register', (req, res) => {
       return res.status(400).json({ error: 'Email already exists' });
     }
 
-    const saltRounds = 10; 
+    const saltRounds = 10;
     bcrypt.hash(userData.password, saltRounds, (hashError, hashedPassword) => {
       if (hashError) {
         console.error('Error hashing password:', hashError);
@@ -42,7 +42,7 @@ router.post('/register', (req, res) => {
         userData.gender,
         userData.age,
         userData.email,
-        hashedPassword, 
+        hashedPassword,
       ];
 
       pool.query(insertUserSql, values, (insertError, results) => {
@@ -52,7 +52,7 @@ router.post('/register', (req, res) => {
         }
 
         console.log('Inserted rows:', results.affectedRows);
-        res.json({status: 'Success', message: 'User data inserted successfully', results });
+        res.json({ status: 'Success', message: 'User data inserted successfully', results });
       });
     });
   });
@@ -163,6 +163,36 @@ router.put('/user/:userId', (req, res) => {
     });
   }
 });
+
+router.post('/scan-food/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { foodId } = req.body;
+
+    if (!foodId) {
+      return res.status(400).json({ error: 'Missing required fields for scan-food' });
+    }
+
+    const insertFoodSql = 'INSERT INTO history (foodId, userId, date) VALUES (?, ?, NOW())';
+    const values = [foodId, userId];
+
+    const queryResult = await pool.query(insertFoodSql, values);
+
+    if (!queryResult) {
+      throw new Error('Error executing query');
+    }
+
+    const rowsAffected = queryResult.affectedRows !== undefined ? queryResult.affectedRows : 1;
+
+    console.log('Inserted rows:', rowsAffected);
+    res.json({ status: 'Success', message: 'Food data inserted into history successfully', rowsAffected });
+  } catch (error) {
+    console.error('Error inserting food data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 module.exports = router;
 
 

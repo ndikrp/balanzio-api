@@ -61,7 +61,7 @@ router.post('/recipe/:userId', (req, res) => {
           return res.status(500).json({ error: 'Error adding favorite recipe.' });
         }
 
-        res.json({status: 'Success', message: 'Favorite recipe added successfully', result });
+        res.json({ status: 'Success', message: 'Favorite recipe added successfully', result });
       });
     });
   });
@@ -78,7 +78,39 @@ router.get('/recipe/favorites/:userId', (req, res) => {
       return res.status(500).json({ error: 'Error retrieving favorites.' });
     }
 
-    res.json({status: 'Success', favorites: results });
+    res.json({ status: 'Success', favorites: results });
+  });
+});
+
+router.delete('/recipe/unfavorite/:userId/:recipeId', (req, res) => {
+  const userId = req.params.userId;
+  const recipeId = req.params.recipeId;
+
+  const unfavoriteQuery = 'DELETE FROM favorites WHERE userId = ? AND recipe_id = ?';
+
+  pool.query(unfavoriteQuery, [userId, recipeId], (err, deleteResults) => {
+    if (err) {
+      console.error('Error unfavoriting recipe:', err);
+      return res.status(500).json({ error: 'Error unfavoriting recipe.' });
+    }
+
+    const getRecipeNameQuery = 'SELECT name FROM recipes WHERE recipe_id = ?';
+
+    pool.query(getRecipeNameQuery, [recipeId], (err, nameResults) => {
+      if (err) {
+        console.error('Error fetching recipe name:', err);
+        return res.status(500).json({ error: 'Error fetching recipe name.' });
+      }
+
+      const unfavoritedRecipeName = nameResults[0] ? nameResults[0].name : null;
+
+      res.json({
+        status: 'Success',
+        message: 'Recipe unfavorited successfully',
+        unfavoritedRecipeName,
+        deleteResults,
+      });
+    });
   });
 });
 
