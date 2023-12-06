@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../../config/database.js');
+const sqlQueries = require('../../utils/sqlQueries.js');
 
 router.get('/history', (req, res) => {
-    const selectHistorySql = 'SELECT * FROM history';
+    const selectHistorySql = sqlQueries.selectAllHistory;
 
     pool.query(selectHistorySql, (error, results) => {
         if (error) {
@@ -17,12 +18,7 @@ router.get('/history', (req, res) => {
 router.get('/history/:userId', (req, res) => {
     const userId = req.params.userId;
 
-    const selectHistorySql = `
-        SELECT h.*, f.name, f.protein, f.fat, f.carbo, f.water
-        FROM history h
-        JOIN food f ON h.foodId = f.foodId
-        WHERE h.userId = ?
-    `;
+    const selectHistorySql = sqlQueries.selectUserHistory;
     
     pool.query(selectHistorySql, [userId], (error, results) => {
         if (error) {

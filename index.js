@@ -7,6 +7,7 @@ const userRoutes = require('./routes/users');
 const recipeRoutes = require('./routes/recipes');
 const foodRoutes = require('./routes/food');
 const historyRoutes = require('./routes/history');
+const goalRoutes = require('./routes/goals');
 
 dotenv.config();
 const app = express();
@@ -20,6 +21,7 @@ app.use(userRoutes);
 app.use(recipeRoutes);
 app.use(foodRoutes);
 app.use(historyRoutes);
+app.use(goalRoutes);
 
 
 app.get("/", async (req, res) => {

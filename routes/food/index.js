@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../../config/database.js');
+const sqlQueries = require('../../utils/sqlQueries.js');
+
 
 router.get('/foods', (req, res) => {
-    const selectFoodsSql = 'SELECT * FROM food';
+    const selectFoodsSql = sqlQueries.selectAllFoods;
 
     pool.query(selectFoodsSql, (error, results) => {
         if (error) {
