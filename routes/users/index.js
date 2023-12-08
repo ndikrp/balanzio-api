@@ -6,7 +6,8 @@ const pool = require('../../config/database.js');
 const sqlQueries = require('../../utils/sqlQueries.js');
 const { errorHandler } = require('../../utils/ErrorChecker.js');
 
-//-----------------------------------/insert--------------------------------//
+//-----------------------------------/register--------------------------------//
+
 
 router.post('/register', (req, res) => {
   const userData = req.body;

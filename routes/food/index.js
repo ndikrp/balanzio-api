@@ -3,7 +3,6 @@ const router = express.Router();
 const pool = require('../../config/database.js');
 const sqlQueries = require('../../utils/sqlQueries.js');
 
-
 router.get('/foods', (req, res) => {
     const selectFoodsSql = sqlQueries.selectAllFoods;
 

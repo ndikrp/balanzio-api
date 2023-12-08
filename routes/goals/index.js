@@ -3,25 +3,31 @@ const router = express.Router();
 const pool = require('../../config/database.js');
 const sqlQueries = require('../../utils/sqlQueries.js');
 
-router.post('/goals', async (req, res) => {
-    try {
-        const { userId, caloriesGoal } = req.body;
-
-        const insertGoalsSql = sqlQueries.insertGoals
-
-        await pool.query(insertGoalsSql, [userId, caloriesGoal]);
-
-        res.json({ status: 'Success', message: 'Goals inserted/updated successfully' });
-    } catch (error) {
+router.post('/goals', (req, res) => {
+    const { userId, caloriesGoal } = req.body;
+  
+    const insertGoalsSql = sqlQueries.insertGoals;
+  
+    pool.query(insertGoalsSql, [userId, caloriesGoal], (error, results) => {
+      if (error) {
         console.error('Error inserting/updating goals:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
+        return res.status(500).json({ error: 'Internal Server Error' });
+      } else {
+        if (results.affectedRows > 0) {
+          res.json({ status: 'Success', message: 'Goals inserted/updated successfully' });
+        } else {
+          console.log('No rows affected. Check if user and date exist.');
+          return res.status(404).json({ error: 'User or date not found' });
+        }
+      }
+    });
+  });
 
 router.get('/goals/:userId', (req, res) => {
     const userId = req.params.userId;
   
-    const fetchGoalsSql = 
+    const fetchGoalsSql = sqlQueries.fetchDailyGoals
+
     console.log('Fetch Goals SQL Query:', fetchGoalsSql); 
     pool.query(fetchGoalsSql, [userId], (error, goalsResults) => {
       console.log('goalsResults:', goalsResults);
