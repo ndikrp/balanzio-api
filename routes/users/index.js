@@ -99,6 +99,26 @@ router.post('/login', (req, res) => {
 
 //-----------------------------------/user--------------------------------//
 
+router.get('/user/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const selectUser = sqlQueries.selectUserSql;
+  pool.query(selectUser, [userId], (error, results) => {
+      if (error) {
+          console.error('Error querying user data:', error);
+          return res.status(500).json({ error: 'Error querying user data' });
+      }
+
+      // Check if a user with the given userId exists
+      if (results.length === 0) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      const userData = results[0];
+      res.json({ status: 'Success', user: userData });
+  });
+});
+
+
 router.put('/user/:userId', (req, res) => {
   const userId = req.params.userId;
   const { name, weight, height, gender, age, password } = req.body;

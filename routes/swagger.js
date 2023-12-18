@@ -165,6 +165,73 @@
  *   name: User
  *   description: API for managing user data
  * /user/{userId}:
+ *   get:
+ *     summary: Get user data by ID
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the user
+ *     responses:
+ *       200:
+ *         description: User data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: The status of the response
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       description: The name of the user
+ *                     weight:
+ *                       type: number
+ *                       description: The weight of the user
+ *                     height:
+ *                       type: number
+ *                       description: The height of the user
+ *                     gender:
+ *                       type: string
+ *                       description: The gender of the user
+ *                     age:
+ *                       type: number
+ *                       description: The age of the user
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: The error message
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: The error message
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: User
+ *   description: API for managing user data
+ * /user/{userId}:
  *   put:
  *     summary: Update user data
  *     tags: [User]
@@ -874,3 +941,4 @@
  *                   type: string
  *                   description: The error message
  */
+
